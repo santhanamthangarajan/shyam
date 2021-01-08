@@ -1,0 +1,29 @@
+---
+
+- name: Copying the Script file to target nodes.
+  copy:
+   src: ../files/Clear-CPU-Usage.sh
+   dest: "/tmp/Clear-CPU-Usage.sh"
+   mode: '0777'
+   owner: root
+   group: root
+   force: yes
+
+- name: Starting The Script to clear CPU Usage.
+  shell: "/tmp/Clear-CPU-Usage.sh"
+  register: install_results
+
+
+- name: set fact if COMPLETE.
+  set_fact:
+   cpu_fact: "complete"
+   cacheable: yes 
+  when: install_results.changed  == true
+     
+- name: set fact if FAILED.
+  set_fact:
+   cpu_fact: "failed"
+   cacheable: yes     
+  when: install_results.changed == false
+
+

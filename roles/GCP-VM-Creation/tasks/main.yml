@@ -1,0 +1,73 @@
+---
+
+- name: Reading Infra-Provision Inputs.
+  read_csv:
+      path: /etc/ansible/IMP-FILES/OUTFILE/InfraInputValues.csv #/etc/ansible/IMP-FILES/InfraInputValues.csv
+  register: infradet
+
+
+- name: create VPC-Network in GCP
+  gcp_compute_network:
+     name: orion-vpc-network
+     auto_create_subnetworks: 'false'
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  register: network
+
+- name: create subnetwork in GCP
+  gcp_compute_subnetwork:
+     name: orion-subnet
+     region: us-west1
+     network: "{{ network }}"
+     private_ip_google_access: no
+     ip_cidr_range: 10.0.1.0/24
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  register: sname
+
+
+- name: Create a instance template
+  gcp_compute_instance_template:
+     name: orion-ins-template
+     properties:
+       disks:
+        - auto_delete: 'true'
+          boot: 'true'
+          initialize_params:
+           source_image: projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts
+           disk_size_gb: 35
+       machine_type: n1-standard-1
+       network_interfaces:
+       - network: "{{ network }}"
+         access_configs:
+         - name: test-config
+           type: ONE_TO_ONE_NAT
+           #nat_ip: "{{ address }}"
+         subnetwork: "{{ sname }}"
+       scheduling:
+               automatic_restart: 'yes' #lias_ip_ranges:
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  register: instancetemplate
+
+- name: Creating GCP-Instances.
+  gcp_compute_instance_group_manager:
+     name: aarmor-group-manager1
+     base_instance_name: aarmor-instance
+     instance_template: "{{ instancetemplate }}"
+     target_size:  "{{ cvminfo.Instance_Count }}"
+     zone: "{{ cvminfo.Zone }}"
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  when: cvminfo.Cloud_Name == "GCP"
+  loop: "{{ infradet.list }}"
+  loop_control:
+      loop_var: cvminfo

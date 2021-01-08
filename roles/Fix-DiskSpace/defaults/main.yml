@@ -1,0 +1,4 @@
+---
+date: "{{ lookup('pipe', 'date +%d-%h-%Y') }}" # -%T') }}"
+filehost_details: 192.168.173.27
+

@@ -1,0 +1,160 @@
+---
+- name: Copying Script File
+  copy:
+     src: ../files/mergefiles.sh
+     dest: "/etc/ansible/scripts/mergefiles.sh" #{{installation_folder}}/ExceptionalIP_List.csv"
+     mode: '0777'
+  delegate_to: "{{filehost_details}}"
+
+- name: Generating InfraInputValues File
+  shell: "/etc/ansible/scripts/mergefiles.sh"
+
+- name: Deleting Special chars in a file.
+  shell: "sed -i 's/\"//g' /etc/ansible/IMP-FILES/OUTFILE/InfraInputValues.csv"
+
+- name: Reading Infra-Provision Inputs.
+  read_csv:
+      path: /etc/ansible/IMP-FILES/OUTFILE/InfraInputValues.csv
+  register: infradet
+
+- name: Spinning The AWS-VM
+  ec2:
+     key_name: dasari-dec-key
+     instance_type: "{{vminfo.Instance_Type}}"
+     image: "{{vminfo.Image}}"
+     wait: yes
+     volumes:
+      - device_name: /dev/sdb
+        volume_size: "{{vminfo.Volume_Size}}"
+     region: "{{vminfo.Zone}}"
+     vpc_subnet_id: "{{vminfo.Subnet}}"
+     count: "{{vminfo.Instance_Count}}"
+     assign_public_ip: yes
+     instance_tags:
+        Name: Test-Server
+  when: vminfo.Cloud_Name == "AWS"
+  loop: "{{ infradet.list }}"
+  loop_control:
+   loop_var: vminfo
+
+- name: Capturing AWS-VM-Provisioning Details
+  postgresql_query:
+     login_host: "{{filehost_details}}"
+     db: "{{dbname}}"
+     login_user: "{{dbuser}}"
+     login_password: "{{dbpassword}}"
+     query: "insert into vmstatus (cloud_name,instance_type,image,zone,subnet,vloume_size ) values (%s,%s,%s,%s,%s,%s);"
+     positional_args:
+        - "{{avminfo.Cloud_Name}}"
+        - "{{avminfo.Instance_Type}}"
+        - "{{avminfo.Image}}"
+        - "{{avminfo.Zone}}"
+        - "{{avminfo.Subnet}}"
+        - "{{avminfo.Volume_Size}}"
+  delegate_to: "{{filehost_details}}"
+  when: avminfo.Cloud_Name == "AWS"
+  loop: "{{ infradet.list }}"
+  loop_control:
+     loop_var: avminfo
+
+
+
+
+
+- name: create VPC-Network in GCP
+  gcp_compute_network:
+     name: orion-vpc-network
+     auto_create_subnetworks: 'false'
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  register: network
+
+- name: create subnetwork in GCP
+  gcp_compute_subnetwork:
+     name: orion-subnet
+     region: us-west1
+     network: "{{ network }}"
+     private_ip_google_access: no
+     ip_cidr_range: 10.0.1.0/24
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  register: sname
+
+
+- name: Create a instance template
+  gcp_compute_instance_template:
+     name: orion-ins-template
+     properties:
+       disks:
+        - auto_delete: 'true'
+          boot: 'true'
+          initialize_params:
+           source_image: projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts
+           disk_size_gb: 35
+       machine_type: n1-standard-1
+       network_interfaces:
+       - network: "{{ network }}"
+         access_configs:
+         - name: test-config
+           type: ONE_TO_ONE_NAT
+           #nat_ip: "{{ address }}"
+         subnetwork: "{{ sname }}"
+       scheduling:
+               automatic_restart: 'yes' #lias_ip_ranges:
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  register: instancetemplate
+
+
+
+- name: Creating GCP-Instances.
+  gcp_compute_instance_group_manager:
+     name: aarmor-group-manager1
+     base_instance_name: aarmor-instance
+     instance_template: "{{ instancetemplate }}"
+     target_size:  "{{ cvminfo.Instance_Count }}"
+     zone: "{{ cvminfo.Zone }}"
+     project: "{{ gcp_project }}"
+     auth_kind: "{{ gcp_cred_kind }}"
+     service_account_file: "{{ gcp_cred_file }}"
+     state: present
+  when: cvminfo.Cloud_Name == "GCP"
+  loop: "{{ infradet.list }}"
+  loop_control:
+      loop_var: cvminfo
+
+
+- name: Capturing GCP-VM-Provisioning Details
+  postgresql_query:
+     login_host: "{{filehost_details}}"
+     db: "{{dbname}}"
+     login_user: "{{dbuser}}"
+     login_password: "{{dbpassword}}"
+     query: "insert into vmstatus (cloud_name,instance_type,image,zone,subnet,vloume_size ) values (%s,%s,%s,%s,%s,%s);"
+     positional_args:
+        - "{{gvminfo.Cloud_Name}}"
+        - "{{gvminfo.Instance_Type}}"
+        - "{{gvminfo.Image}}"
+        - "{{gvminfo.Zone}}"
+        - "-"
+        - "{{gvminfo.Volume_Size}}"
+  delegate_to: "{{filehost_details}}"
+  when: gvminfo.Cloud_Name == "GCP"
+  loop: "{{ infradet.list }}"
+  loop_control:
+     loop_var: gvminfo
+
+
+- name: Removing InfraInput File.
+  file:
+   path: /etc/ansible/IMP-FILES/OUTFILE/InfraInputValues.csv
+   state: absent
+    
+- name: Deleting Old Files
+  shell: "rm -rf /etc/ansible/IMP-FILES/*.csv"   
