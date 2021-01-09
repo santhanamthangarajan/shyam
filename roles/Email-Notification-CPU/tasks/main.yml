@@ -1,0 +1,31 @@
+---
+
+- name: sending completion notification to application owner
+  mail:
+    host: "{{ notification_email_smtp_host }}"
+    port: "{{ notification_email_smtp_port }}"
+    username: "{{ notification_email_username }}"
+    password: "{{ notification_email_password }}"
+    from: "{{ notification_email_username }}"
+    to: shyamkumar.d@orioninc.com
+    subject: "{{tower_job_id}}-success"
+    body: 'Clear CPU Usage Task has Successfull'
+    subtype: html
+  delegate_to: "{{filehost_details}}"
+  run_once: true
+  when: seum_status == "complete"
+
+- name: sending failure notification to application owner
+  mail:
+    host: "{{ notification_email_smtp_host }}"
+    port: "{{ notification_email_smtp_port }}"
+    username: "{{ notification_email_username }}"
+    password: "{{ notification_email_password }}"
+    from: "{{ notification_email_username }}"
+    to: shyamkumar.d@orioninc.com
+    subject: "{{tower_job_id}}-failed"
+    body: 'Clear CPU Usage Task has Failed'
+    subtype: html
+  delegate_to: "{{filehost_details}}"
+  run_once: true
+  when: seum_status == "failed"
