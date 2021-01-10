@@ -21,4 +21,4 @@
     #
   - name: urrent job id is
     debug:
-      msg: "{{ tower_job_id }}"
+      msg: "{{ tower_job_template_id }}"
