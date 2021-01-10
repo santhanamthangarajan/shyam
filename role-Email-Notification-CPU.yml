@@ -1,9 +1,0 @@
----
-- hosts: all
-  gather_facts: no
-  become: no
-    
-  tasks:
-  - name: include Email-Notification-CPU
-    include_role: 
-     name: Email-Notification-CPU

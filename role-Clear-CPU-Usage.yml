@@ -8,22 +8,3 @@
   - name: Include Clear-CPU-Usage
     include_role: 
      name: Clear-CPU-Usage
-
-  post_tasks:
-    - name: set stat
-      set_stats:
-        data:
-          seum_status: complete
-        aggregate: no
-        per_host: no
-      when:
-        - cpu_fact == "complete"
-
-    - name: set stat
-      set_stats:
-        data:
-          seum_status: failed
-        aggregate: no
-        per_host: no
-      when:
-        - cpu_fact == "failed"
