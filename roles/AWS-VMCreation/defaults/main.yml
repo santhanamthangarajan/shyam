@@ -1,7 +1,7 @@
 ---
 gcp_project: aarmor
 gcp_cred_kind: serviceaccount
-gcp_cred_file: /etc/ansible/roles/ORION/Aarmor/roles/GCP-VM-Creation/files/aarmor-b83968b744d7.json
+gcp_cred_file: /etc/ansible/roles/ORION/shyam/roles/GCP-VM-Creation/files/aarmor-b83968b744d7.json
 filehost_details: 192.168.173.33
 dbname: aarmor
 dbuser: aarmor
