@@ -19,6 +19,3 @@
     win_shell: 'Remove-Item C:/Users/ansadmin/Desktop/mid.newyork-06-26-2019__patch10a-10-02-2020_10-08-2020_1523.windows.x86-64/agent/export/CloudImport/*.txt'
     #C:/Users/ansadmin/INFRAFILES/*.txt'
     #
-  - name: urrent job id is
-    debug:
-      msg: "{{ tower_workflow_job_id }}"
