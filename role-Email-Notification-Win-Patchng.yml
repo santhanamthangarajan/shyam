@@ -4,6 +4,6 @@
   become: no
     
   tasks:
-  - name: include Email-Notification
+  - name: include Email-Notification-Win-Patch
     include_role: 
-     name: Email-Notification
+     name: Email-Notification-Win-Patch
