@@ -1,5 +1,5 @@
 ---
-- hosts: "{{survey_host}}"
+- hosts: all #"{{survey_host}}"
   gather_facts: no
   become: no
     
