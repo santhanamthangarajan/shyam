@@ -1,21 +1,21 @@
 ---     
-
 - name: Create a temp file
   file:
     path: /tmp/process_ids.txt
     state: touch
     mode: '0777'
     force: yes
-
-
+- name: Create a temp file
+  file:
+    path: /tmp/fileslist.txt
+    state: touch
+    mode: '0777'
+    force: yes
 - name: Copying the Script file to target nodes.
   copy:
    src: ../files/Log-Retention.sh
    dest: "/tmp/Log-Retention.sh"
    mode: '0777'
    force: yes
-
-  
 - name: Clearing The DiskSpace.
   shell: "/tmp/Log-Retention.sh"
-  

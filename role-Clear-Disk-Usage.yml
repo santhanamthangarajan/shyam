@@ -6,7 +6,6 @@
   strategy: free
           
   tasks:
-  - name: include Fix-DiskSpace
+  - name: include Clear-Disk-Usage
     include_role: 
-     name: Fix-DiskSpace
-  
+     name: Clear-Disk-Usage

@@ -6,6 +6,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 ##############################################
 DAYS_TO_KEEP=90
 PROCESS_IDS_FILE=/tmp/process_ids.txt
+PROCESS_FILE=/tmp/fileslist.txt
 PROCESS_CATALINA_LOGS(){
         ps -ef | grep java | grep catalina | awk '{print $2}' > $PROCESS_IDS_FILE
         for TOMCAT_PID in `cat $PROCESS_IDS_FILE`
@@ -23,5 +24,14 @@ PROCESS_CATALINA_LOGS(){
                 done
         done
 }
+PROCESS_FILES(){
+echo "******* Processing Files *******" >> $PROCESS_FILE
+find / -xdev -type f -size +1G > $PROCESS_FILE
+sed -i '/lastlog/d' /tmp/fileslist.txt
+for FILE_PATH in `cat $PROCESS_FILE`
+do
+gzip $FILE_PATH
+done
+}
+PROCESS_FILES
 PROCESS_CATALINA_LOGS
-
