@@ -4,12 +4,16 @@
      db: "{{dbname}}"
      login_user: "{{dbuser}}"
      login_password: "{{dbpassword}}"
-     query: "insert into patchstatus ( hostname, ip_address, activity_name, patching_status,date,Package_Name ) values (%s,%s,%s,%s,%s,%s);"
+     query: "insert into patchstatus ( hostname, ip_address, activity_name, patching_status,date ) values (%s,%s,%s,%s,%s);"
      positional_args:
         - "{{hostout.stdout}}"
         - "{{ipout.stdout}}"
         - "{{Activity_Name}}"
         - "{{linux_patching_fact}}"
         - "{{date}}"
-        - "{{package_list[1]}}"
+          #        - "{{package_list[1]}}"
   delegate_to: "{{filehost_details}}"
+
+
+
+

@@ -2,7 +2,9 @@
 date: "{{ lookup('pipe', 'date +%d-%h-%Y') }}" # -%T') }}"
 filehost_details: 192.168.173.33
 Activity_Name: Linux_Patching
+dbname: aarmor
+dbuser: aarmor
+dbpassword: Welcome@2020$
 package_list:
-  - rest-0.8.1-2.el8.x86_64
-  - krb5-libs-1.18.2-5.el8.x86_64
-    #---
+  - rest
+    #- wget
