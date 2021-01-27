@@ -7,4 +7,4 @@ dbuser: aarmor
 dbpassword: Welcome@2020$
 package_list:
   - rest
-    #- wget
+  - wget
