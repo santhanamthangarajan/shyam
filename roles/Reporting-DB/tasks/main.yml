@@ -13,7 +13,3 @@
         - "{{date}}"
           #        - "{{package_list[1]}}"
   delegate_to: "{{filehost_details}}"
-
-
-
-

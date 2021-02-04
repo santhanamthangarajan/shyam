@@ -33,11 +33,9 @@
    cacheable: yes     
   when: install_results.failed == true
 
-
 - name: Gather package facts
   package_facts:
     manager: auto
-
 
 - name: Capturing Package DetailS.
   postgresql_query:
@@ -50,15 +48,11 @@
         - "{{item}}"
         - "{{ ansible_facts.packages [item] | json_query('[*].version') }}" #"{{ipout.stdout}}"
         - "{{date}}"
-          #  delegate_to: "{{filehost_details}}"
   delegate_to: "{{filehost_details}}"
   when: " item  in ansible_facts.packages"
   with_items: "{{ package_list }}"
-  #delegate_to: "{{filehost_details}}"
-
-        
-        
         
 - name: Importing Reporting-DB role
   import_role:
    name: Reporting-DB
+
