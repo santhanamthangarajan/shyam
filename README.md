@@ -1,10 +1,2 @@
 # dasari-repo
-This Project is used to automate the IT operations.
-
-
-FETCH
-DS
-KU
-
-
-FETCH TEST
+This Project is used to automate the IT operations.!!!
